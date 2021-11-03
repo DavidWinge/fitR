@@ -1,3 +1,14 @@
+# Example data folders:
+13557/
+13558/
+13559/
+
+# Example output data and plots
+fitR_result.csv
+estimated_mid_segment_doping.png
+
+# GITHUB TEMPLATE STARTS HERE:
+################################
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
