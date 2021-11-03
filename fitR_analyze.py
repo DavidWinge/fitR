@@ -23,6 +23,7 @@ TODO: Consider using pythons argparser for a nice user interface and
 import pandas as pd
 import numpy as np
 import sys
+import os
 
 e_const = 1.602e-19 
 
@@ -34,11 +35,16 @@ def doping_from_R(L,D,mu,R):
     area = np.pi*(D/2)**2
     return L/area/R/e_const/1e-4/mu
 
-def analyze(filename):
-    df = pd.read_csv(filename)
-    
-    # Read a few parameters from fitWanalyze.config
-    Lp,Li,Ln,D,mup,mui,mun,Np,Nn = np.loadtxt('fitR_analyze.config',unpack=True)
+def analyze(df, config_folder=None):
+    # Try reading a folder-specific config file
+    config_name = 'fitR_analyze.config'
+    try:
+        config_file = os.path.join(config_folder,config_name)
+        # Read a few parameters from fitWanalyze.config
+        Lp,Li,Ln,D,mup,mui,mun,Np,Nn = np.loadtxt(config_file,unpack=True)
+    except:
+        # If above does not work, read config file from run directory
+        Lp,Li,Ln,D,mup,mui,mun,Np,Nn = np.loadtxt(config_name,unpack=True)
     
     # Estimate the resistance values of the n+ and p+ regions
     Rp = calculate_R(Lp,D,mup,Np)  
@@ -47,12 +53,13 @@ def analyze(filename):
     
     # Estimate the doping based on the resitance on the i/p-/n- region
     Ni = doping_from_R(Li,D,mui,Ri)
-    
-    df['Ni'] = Ni
-    
-    return df
+    # Best practice is to do the following with copies of the DataFrame
+    dfc = df.copy()
+    dfc.loc[:,'Ni'] = Ni
+    # Return the copy
+    return dfc 
 
-def plot_Ni(df) :
+def calculate_Ni(df) :
     # Find the different samples
     unique_samples = np.unique(df['Sample'])
     
@@ -61,9 +68,14 @@ def plot_Ni(df) :
     # Save the statistics of each sample in dictionaries
     stats = {}
     for sample in unique_samples :
-        samples[sample] = df['Ni'][df['Sample']==sample]
-        # Get the mean and standard deviation
-        stats[sample] = samples[sample].describe()
+        # Pick out the relevant subset      
+        samples[sample] = df.loc[df['Sample']==sample,:]
+        # Send for analysis
+        samples[sample] = analyze(samples[sample],config_folder=str(sample))
+        # Get the mean and standard deviation using describe() 
+        stats[sample] = samples[sample]['Ni'].describe()
+        # Add the Ni data to the original DataFrame
+        df.loc[df['Sample']==sample,'Ni']=samples[sample].loc[:,'Ni']
         
     # Show mean and standard deviation
     import matplotlib.pyplot as plt
@@ -91,14 +103,22 @@ def plot_Ni(df) :
     
     plt.tight_layout()
     plt.savefig('estimated_mid_segment_doping.png')
-    plt.show()      
-
+    plt.show()   
+    
+    # Return appended DataFrame for printing
+    return df
+    
 if __name__ == '__main__' :
     # if file is run as a script
     if len(sys.argv) > 1 :
-        df = analyze(sys.argv[1])
-        #df = analyze('/home/dwinge/Projects/Solarcells_darkIV/fitWresult.csv')
-        plot_Ni(df)
+        # Load data
+        filename = sys.argv[1] 
+        #filename = 'fitR_result.csv'
+        # Read data
+        df = pd.read_csv(filename) #analyze(sys.argv[1])
+        # Analyze data
+        df = calculate_Ni(df)
+        # Save with additional column for Ni
         df.to_csv('fitR_analyzedresult.csv',float_format='%.4g',index=False)
         
     else :

@@ -42,6 +42,11 @@ Dependiencies:
 
 numpy, scipy, pandas, xlsxwriter
 
+How to run:
+
+Scripts are run either from terminal (see examples below) or from a IDE of 
+some sort (very minor changes to the code are necessary in that case).
+
 Example usage of the provided scripts on the example 
 data folders in the repository:
 
@@ -62,7 +67,9 @@ Analyze result:
 Config files needed:
 
 fitR_file.py and fitR_directories.py need fitR_file.config in the run-directory.
-fitR_analyze.py needs fitR_analyze.config in the run-directory.
+fitR_analyze.py needs fitR_analyze.config in the run-directory. 
+For sample-specific instructions, put a copy of fitR_analyze.config in the sample 
+directory with the specific parameters. The script will look for it.
 
 Generated output:
 

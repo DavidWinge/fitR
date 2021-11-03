@@ -4,8 +4,8 @@
 13559/
 
 # Example output data and plots
-fitR_result.csv
-estimated_mid_segment_doping.png
+*.csv
+*.png
 
 # GITHUB TEMPLATE STARTS HERE:
 ################################
