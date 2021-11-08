@@ -59,6 +59,48 @@ def analyze(df, config_folder=None):
     # Return the copy
     return dfc 
 
+def plot_Rs(df) :
+    # Find the different samples
+    unique_samples = np.unique(df['Sample'])
+    
+    # Organize the sample measurment in dictionaries
+    samples = {}
+    # Save the statistics of each sample in dictionaries
+    stats = {}
+    for sample in unique_samples :
+        # Pick out the relevant subset      
+        samples[sample] = df.loc[df['Sample']==sample,:]
+        # Get the mean and standard deviation using describe() 
+        stats[sample] = samples[sample]['Rs'].describe()
+        
+    # Show mean and standard deviation
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots()  
+    
+    # Tried a few options to visualize the error bars
+    ax.errorbar(range(len(samples)),
+                [stats[key]['mean'] for key in stats],
+                yerr=[stats[key]['std'] for key in stats],
+                linestyle='',
+                marker='s',
+                ms=10,
+                elinewidth=2,
+                #ecolor='black',
+                capsize=6,
+                capthick=3)
+
+    # Name the data from the sample names
+    ax.set_xticks(range(len(samples)))
+    ax.set_xticklabels(stats.keys())
+    
+    ax.set_xlabel('Sample label')
+    ax.set_ylabel(r'Estimated series resistance (Ohm)')
+    
+    plt.tight_layout()
+    plt.savefig('estimated_series_resistance.png')
+    plt.show()   
+    
 def calculate_Ni(df) :
     # Find the different samples
     unique_samples = np.unique(df['Sample'])
@@ -118,6 +160,8 @@ if __name__ == '__main__' :
         df = pd.read_csv(filename) #analyze(sys.argv[1])
         # Analyze data
         df = calculate_Ni(df)
+        # Plot Rs
+        plot_Rs(df)
         # Save with additional column for Ni
         df.to_csv('fitR_analyzedresult.csv',float_format='%.4g',index=False)
         

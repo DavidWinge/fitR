@@ -2,6 +2,9 @@
 *.csv
 *.png
 
+# Copies of the input files
+*_fitR.xlsx
+
 # GITHUB TEMPLATE STARTS HERE:
 ################################
 # Byte-compiled / optimized / DLL files
